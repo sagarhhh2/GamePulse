@@ -1,4 +1,4 @@
-analyticsScope: t.scope ? /universe\.analytics/.test(t.scope) : true, scopeRaw: t.scope || "(Roblox sent none)"});const tok = a.analyticsScope ? await accessToken(a) : null;if(r.status === 401 || r.status === 403){ denied++; a.anErr = a.anErr || {}; a.anErr[uni] = (au.id === "oauth" ? "Sign-in" : "API key") + ": " + r.status + " " + String(r.text || "").slice(0, 140); saveS(); continue; }box.innerHTML = lockedCard(true, g.id); bindCommon(box);function lockedCard(denied, uni){ const A = acct() || {}, G = A.granted || []; const why = A.userId ? '<div class="mono" style="display:block;text-align:left;margin:0 0 14px;white-space:normal;font-size:11.5px;line-height:1.6">Sign-in analytics: ' + (A.analyticsScope ? "yes" : "no") + '<br>Scopes from Roblox: ' + esc(A.scopeRaw || "unknown (signed in with an older version)") + '<br>Games allowed at sign-in: ' + G.length + (uni ? (G.includes(String(uni)) ? " (this game included)" : " (this game not included)") : "") + (uni && (A.anErr || {})[uni] ? '<br>Roblox said: ' + esc(A.anErr[uni]) : "") + "</div>" : "";'</p>' + why + '<button class="btn" data-act="relogin" style="display:inline-flex;flex:none;padding:12px 20px;margin-bottom:10px">' + ic("login") + 'Sign in again</button><br><button class="btn ghost" data-act="connectAn"<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -513,7 +513,7 @@ async function finishLogin(tok){
   let a = S.accounts.find(x => x.userId === uid);
   if(!a){ a = {userId: uid, groups: {}, ownGames: true, extra: [], keys: 0}; S.accounts.push(a); }
   Object.assign(a, {username: info.json.preferred_username || info.json.name, displayName: info.json.nickname || info.json.name,
-    avatar: info.json.picture || a.avatar || "", analyticsScope: /universe\.analytics:read/.test(t.scope)});
+    avatar: info.json.picture || a.avatar || "", analyticsScope: t.scope ? /universe\.analytics/.test(t.scope) : true, scopeRaw: t.scope || "(Roblox sent none)"});
   S.active = uid; saveS();
   await loadResources(a);
   try{
@@ -581,7 +581,7 @@ function rangeDates(days){
 async function authsFor(a, uni){
   const out = [];
   const pref = (a.anAuth || {})[uni];
-  const tok = a.analyticsScope && (!a.granted || !a.granted.length || a.granted.includes(String(uni))) ? await accessToken(a) : null;
+  const tok = a.analyticsScope ? await accessToken(a) : null;
   if(tok) out.push({id: "oauth", h: {Authorization: "Bearer " + tok}});
   (secure.getJ("keys_" + a.userId, []) || []).forEach(k => out.push({id: k.id, h: {"x-api-key": k.key}}));
   if(pref) out.sort((x, y) => (y.id === pref) - (x.id === pref));
@@ -598,7 +598,7 @@ async function metric(a, uni, mk, days){
   let denied = 0;
   for(const au of auths){
     let r = await http("POST", url, {headers: au.h, body: {metric: mk, granularity: "OneDay", startTime: st, endTime: en}});
-    if(r.status === 401 || r.status === 403){ denied++; continue; }
+    if(r.status === 401 || r.status === 403){ denied++; a.anErr = a.anErr || {}; a.anErr[uni] = (au.id === "oauth" ? "Sign-in" : "API key") + ": " + r.status + " " + String(r.text || "").slice(0, 140); saveS(); continue; }
     for(let i = 0; r.status >= 200 && r.status < 300 && r.json && r.json.done === false && i < 20; i++){
       await sleep(900); r = await http("GET", "https://apis.roblox.com/analytics-query-api/" + r.json.path, {headers: au.h});
     }
@@ -998,12 +998,12 @@ async function renderDetailAnalytics(g, a){
     }
     if(m.k === detailMetric) drawBig();
   });
-  if(noAccess && METRICS.every(m => res[m.k] && res[m.k].err === "No access")){ box.innerHTML = lockedCard(true); bindCommon(box); }
+  if(noAccess && METRICS.every(m => res[m.k] && res[m.k].err === "No access")){ box.innerHTML = lockedCard(true, g.id); bindCommon(box); }
 }
-function lockedCard(denied){
+function lockedCard(denied, uni){ const A = acct() || {}, G = A.granted || []; const why = A.userId ? '<div class="mono" style="display:block;text-align:left;margin:0 0 14px;white-space:normal;font-size:11.5px;line-height:1.6">Sign-in analytics: ' + (A.analyticsScope ? "yes" : "no") + '<br>Scopes from Roblox: ' + esc(A.scopeRaw || "unknown (signed in with an older version)") + '<br>Games allowed at sign-in: ' + G.length + (uni ? (G.includes(String(uni)) ? " (this game included)" : " (this game not included)") : "") + (uni && (A.anErr || {})[uni] ? '<br>Roblox said: ' + esc(A.anErr[uni]) : "") + "</div>" : "";
   return '<div class="card locked"><div class="ic c-purple">' + ic(denied ? "lock" : "spark") + "</div><b>" + (denied ? "No analytics access for this game" : "See playtime, sessions & retention") + "</b><p>" +
     (denied ? "Your sign-in or API keys don't cover this game. If it belongs to a group, add an API key made in that group's Creator Hub." : "Connect analytics once and every game you own or manage shows daily users, playtime, retention and revenue here.") +
-    '</p><button class="btn" data-act="connectAn" style="display:inline-flex;flex:none;padding:12px 20px">' + ic("key") + (denied ? "Add an API key" : "Connect analytics") + "</button></div>";
+    '</p>' + why + '<button class="btn" data-act="relogin" style="display:inline-flex;flex:none;padding:12px 20px;margin-bottom:10px">' + ic("login") + 'Sign in again</button><br><button class="btn ghost" data-act="connectAn" style="display:inline-flex;flex:none;padding:12px 20px">' + ic("key") + (denied ? "Add an API key" : "Connect analytics") + "</button></div>";
 }
 
 /* ---------- ANALYTICS TAB ---------- */

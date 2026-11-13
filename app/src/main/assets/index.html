@@ -472,7 +472,7 @@ const histKey = () => "gp_hist_" + S.active;
 /* =========================================================
    Roblox OAuth 2.0 (official "Sign in with Roblox")
    ========================================================= */
-const clientId = () => load("gp_client", "");
+const clientId = () => load("gp_client", "") || "8761413591816145087";
 async function startLogin(withAnalytics){
   haptic();
   if(DEMO){ return demoLogin(); }

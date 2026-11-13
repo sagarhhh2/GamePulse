@@ -518,7 +518,7 @@ async function finishLogin(tok){
   await loadResources(a);
   try{
     const gs = await api("groups", "/v2/users/" + uid + "/groups/roles");
-    (gs.data || []).forEach(x => { if(!a.groups[x.group.id]) a.groups[x.group.id] = {name: x.group.name, role: x.role && x.role.name, rank: x.role && x.role.rank || 0, on: (x.role && x.role.rank) >= 254}; });
+    (gs.data || []).forEach(x => { if(!a.groups[x.group.id]) a.groups[x.group.id] = {name: x.group.name, role: x.role && x.role.name, rank: x.role && x.role.rank || 0, on: true}; });
     saveS();
   }catch(e){}
   if(!a.avatar) await fillAvatar(a);
